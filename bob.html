@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CGPA Reef — Year-wise CGPA Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sun-yellow: #FFD23F;
+    --sun-yellow-deep: #F2B300;
+    --ocean: #0B6E9C;
+    --ocean-deep: #063F5C;
+    --ocean-deeper: #032838;
+    --coral: #FF7A5C;
+    --sand: #FFF8E4;
+    --ink: #1B3A4B;
+    --line: rgba(27,58,75,0.18);
+    --font-display: 'Fredoka', sans-serif;
+    --font-ui: 'Nunito', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family: var(--font-ui);
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,0.10), transparent 45%),
+      linear-gradient(180deg, #1391C9 0%, var(--ocean) 40%, var(--ocean-deep) 78%, var(--ocean-deeper) 100%);
+    padding: clamp(18px, 5vw, 60px) 14px;
+    display:flex;
+    justify-content:center;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* floating bubbles */
+  .bubble{
+    position:fixed;
+    bottom:-40px;
+    border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.85), rgba(255,255,255,0.12) 70%);
+    animation: floatUp linear infinite;
+    pointer-events:none;
+    z-index:0;
+  }
+  @keyframes floatUp{
+    0%{ transform: translateY(0) translateX(0); opacity:0; }
+    10%{ opacity:0.8; }
+    100%{ transform: translateY(-110vh) translateX(20px); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){ .bubble{ animation: none; display:none; } }
+
+  .reef{
+    width:100%;
+    max-width: 780px;
+    background: var(--sand);
+    border-radius: 34px 34px 30px 30px;
+    box-shadow: 0 24px 50px -18px rgba(3,20,30,0.6);
+    position:relative;
+    z-index:1;
+    overflow:hidden;
+  }
+
+  /* ---------- Header ---------- */
+  .panel-hero{
+    background: var(--sun-yellow);
+    background-image: radial-gradient(circle, rgba(255,255,255,0.5) 2px, transparent 2.4px);
+    background-size: 16px 16px;
+    padding: 40px 34px 30px;
+    position:relative;
+    border-bottom: 6px solid var(--sun-yellow-deep);
+  }
+
+  .badge-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+
+  .fin{
+    width:34px; height:34px;
+    border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%;
+    background: var(--coral);
+    border: 3px solid var(--ink);
+    flex-shrink:0;
+  }
+
+  .eyebrow{
+    font-family: var(--font-ui);
+    font-weight:800;
+    font-size: 12.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color: var(--ink);
+  }
+
+  h1{
+    font-family: var(--font-display);
+    font-weight:700;
+    font-size: clamp(34px, 6.5vw, 50px);
+    line-height:1.02;
+    color: var(--ocean-deep);
+    margin: 0 0 10px;
+  }
+
+  .lede{
+    font-size: 15.5px;
+    font-weight:600;
+    line-height:1.5;
+    color: var(--ink);
+    max-width: 48ch;
+    margin:0;
+  }
+
+  /* ---------- Body ---------- */
+  .reef__body{ padding: 30px 34px 34px; position:relative; }
+
+  .card{
+    background:#fff;
+    border-radius: 22px;
+    border: 3px solid var(--ocean-deep);
+    box-shadow: 0 8px 0 -2px rgba(6,63,92,0.12), 0 10px 18px -10px rgba(6,63,92,0.35);
+    padding: 24px 26px;
+    margin-bottom: 28px;
+    position:relative;
+  }
+
+  .card__tag{
+    position:absolute;
+    top:-16px; left:22px;
+    background: var(--coral);
+    color:#fff;
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size: 13px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    border: 2.5px solid var(--ink);
+  }
+
+  .section-title{
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size: 22px;
+    color: var(--ocean-deep);
+    margin: 8px 0 16px;
+  }
+
+  /* ---------- Fields ---------- */
+  .field-row{ display:flex; gap:20px; flex-wrap:wrap; }
+  .field{ flex:1 1 200px; display:flex; flex-direction:column; gap:6px; }
+
+  label{
+    font-family: var(--font-ui);
+    font-weight:800;
+    font-size: 12.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color: var(--ocean-deep);
+  }
+
+  select, input[type="number"]{
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--sand);
+    border: 2.5px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    outline:none;
+    -webkit-appearance:none;
+    appearance:none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+
+  select{
+    background-image: linear-gradient(45deg, transparent 50%, var(--ocean-deep) 50%), linear-gradient(135deg, var(--ocean-deep) 50%, transparent 50%);
+    background-position: calc(100% - 14px) 18px, calc(100% - 9px) 18px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 30px;
+  }
+
+  select:focus, input[type="number"]:focus{
+    border-color: var(--ocean);
+    box-shadow: 0 0 0 3px rgba(11,110,156,0.18);
+  }
+  select:focus-visible, input:focus-visible, button:focus-visible{
+    outline: 3px solid var(--coral);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Year / semester records ---------- */
+  .year-block{ margin-bottom:20px; }
+  .year-block:last-child{ margin-bottom:0; }
+
+  .year-title{
+    display:flex; align-items:center; gap:10px;
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size: 18px;
+    color: var(--ocean-deep);
+    margin: 0 0 10px;
+  }
+  .year-num{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight:700;
+    color:#fff;
+    background: var(--ocean);
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+
+  .sem-rows{ display:flex; flex-direction:column; }
+  .sem-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; padding: 9px 0;
+    border-bottom: 1.5px dashed var(--line);
+  }
+  .sem-meta{ display:flex; flex-direction:column; gap:2px; }
+  .sem-name{ font-size:14.5px; font-weight:800; color:var(--ink); }
+  .sem-credits{ font-family: var(--font-mono); font-size:11.5px; color:#6B7C86; }
+
+  .sgpa-input{ width:96px; text-align:right; flex-shrink:0; border-radius: 10px; }
+  .sgpa-input::placeholder{ color: rgba(27,58,75,0.32); }
+
+  /* ---------- Buttons ---------- */
+  .actions{ display:flex; gap:14px; margin-top:24px; flex-wrap:wrap; }
+
+  .btn{
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size: 14.5px;
+    letter-spacing:0.02em;
+    border: none;
+    border-radius: 999px;
+    padding: 13px 26px;
+    cursor:pointer;
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .btn:active{ transform: scale(0.96); }
+
+  .btn-fire{ background: var(--coral); color:#fff; box-shadow: 0 5px 0 #C74D34; }
+  .btn-fire:hover{ filter: brightness(1.05); }
+  .btn-fire:active{ box-shadow: 0 2px 0 #C74D34; transform: translateY(3px) scale(0.98); }
+
+  .btn-ghost{ background: var(--sand); color: var(--ocean-deep); border: 2.5px solid var(--ocean); }
+  .btn-ghost:hover{ background: #EFE6C8; }
+
+  /* ---------- Result ---------- */
+  .result-card{ display:flex; align-items:center; gap:30px; flex-wrap:wrap; }
+
+  .pop-wrap{ position:relative; width:180px; height:180px; flex-shrink:0; }
+
+  .pop-wrap.pop-in .pop-badge{ animation: popIn .5s cubic-bezier(.3,1.2,.4,1) both; }
+  .pop-wrap.pop-in .mini-bubble{ animation: bubbleUp .8s ease-out both; }
+
+  @keyframes popIn{
+    0%{ opacity:0; transform: scale(0.3); }
+    65%{ opacity:1; transform: scale(1.1); }
+    100%{ opacity:1; transform: scale(1); }
+  }
+  @keyframes bubbleUp{
+    0%{ opacity:0; transform: translateY(0) scale(0.4); }
+    30%{ opacity:1; }
+    100%{ opacity:0; transform: translateY(-70px) scale(1); }
+  }
+
+  .pop-badge{
+    position:absolute; inset:6px;
+    border-radius: 46% 54% 58% 42% / 50% 46% 54% 50%;
+    background: var(--sun-yellow);
+    background-image: radial-gradient(circle, rgba(255,255,255,0.55) 2.2px, transparent 2.6px);
+    background-size: 13px 13px;
+    border: 4px solid var(--ink);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+  }
+
+  .mini-bubble{
+    position:absolute;
+    border-radius:50%;
+    background: rgba(255,255,255,0.75);
+    pointer-events:none;
+  }
+
+  .cgpa-value{
+    font-family: var(--font-display);
+    font-weight:700;
+    font-size: 42px;
+    color: var(--ocean-deep);
+    line-height:1;
+  }
+  .cgpa-class{
+    font-family: var(--font-ui);
+    font-weight:800;
+    font-size: 10.5px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    color: var(--ocean-deep);
+    max-width: 100px;
+    margin-top: 4px;
+  }
+
+  .result-side{ flex:1 1 240px; min-width:220px; display:flex; flex-direction:column; gap:16px; }
+
+  .percent-badge{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    background: var(--ocean);
+    border-radius: 16px;
+    padding: 13px 18px;
+    box-shadow: 0 5px 0 var(--ocean-deep);
+  }
+  .percent-badge .p-label{
+    font-family: var(--font-ui);
+    font-weight:800;
+    font-size: 12px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:#fff;
+  }
+  .percent-badge .p-value{
+    font-family: var(--font-display);
+    font-weight:700;
+    font-size: 28px;
+    color:#fff;
+  }
+
+  table{ width:100%; border-collapse:collapse; }
+  table td{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1.5px dashed var(--line);
+  }
+  table td:last-child{ text-align:right; font-weight:700; color: var(--ocean); }
+  .year-summary h3{
+    font-family: var(--font-ui);
+    font-weight:800;
+    font-size: 11.5px;
+    letter-spacing:0.07em;
+    text-transform:uppercase;
+    color: var(--coral);
+    margin: 0 0 8px;
+  }
+
+  .disclaimer{
+    width:100%;
+    font-size: 12px;
+    color:#5C6B74;
+    margin-top: 18px;
+    line-height:1.5;
+    font-family: var(--font-ui);
+  }
+
+  /* ---------- Footer ---------- */
+  .reef__footer{
+    padding: 16px 34px 26px;
+    background: #EFE6C8;
+  }
+  .reef__footer p{
+    margin:0; font-size: 11.5px; color:#5C6B74; font-family: var(--font-mono);
+  }
+
+  @media (max-width: 680px){
+    .reef__body{ padding: 24px 18px 28px; }
+    .panel-hero{ padding: 30px 20px 24px; }
+    .card{ padding: 18px 16px; }
+    .reef__footer{ padding: 14px 18px 20px; }
+    .result-card{ gap:22px; }
+  }
+
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+<main class="reef">
+
+  <header class="panel-hero">
+    <div class="badge-row">
+      <span class="fin" aria-hidden="true"></span>
+      <span class="eyebrow">Somewhere under the syllabus</span>
+    </div>
+    <h1>CGPA Reef</h1>
+    <p class="lede">Dive into your semesters — log your SGPA year by year and surface with your CGPA, class, and percentage.</p>
+  </header>
+
+  <div class="reef__body">
+
+    <section class="card" aria-labelledby="setup-heading">
+      <span class="card__tag">Step 1</span>
+      <h2 id="setup-heading" class="section-title">Get your gear on</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="studentType">Admission type</label>
+          <select id="studentType">
+            <option value="regular">Regular entry</option>
+            <option value="lateral">Lateral entry (from 2nd year)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="years">Years completed</label>
+          <select id="years">
+            <option value="">--Select--</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="inputsSection" hidden aria-labelledby="records-heading">
+      <span class="card__tag">Step 2</span>
+      <h2 id="records-heading" class="section-title">Log your SGPA</h2>
+      <form id="sgpaForm" novalidate>
+        <div id="inputs"></div>
+        <div class="actions">
+          <button type="submit" class="btn btn-fire">Splash — Calculate CGPA</button>
+          <button type="button" class="btn btn-ghost" id="resetBtn">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card result-card" id="resultCard" hidden aria-live="polite" aria-labelledby="result-heading">
+      <span class="card__tag" id="result-heading">Result</span>
+
+      <div class="pop-wrap" id="popWrap">
+        <span class="mini-bubble" style="width:14px;height:14px;left:8px;bottom:70px;"></span>
+        <span class="mini-bubble" style="width:9px;height:9px;left:140px;bottom:50px;"></span>
+        <span class="mini-bubble" style="width:11px;height:11px;left:150px;bottom:110px;"></span>
+        <span class="mini-bubble" style="width:7px;height:7px;left:20px;bottom:120px;"></span>
+        <div class="pop-badge">
+          <span class="cgpa-value" id="cgpaValue">0.00</span>
+          <span class="cgpa-class" id="cgpaClass">&mdash;</span>
+        </div>
+      </div>
+
+      <div class="result-side">
+        <div class="percent-badge">
+          <span class="p-label">Equivalent %</span>
+          <span class="p-value" id="percentageValue">--</span>
+        </div>
+
+        <div class="year-summary">
+          <h3>Year-wise average</h3>
+          <table><tbody id="yearTableBody"></tbody></table>
+        </div>
+      </div>
+
+      <p class="disclaimer">Percentage uses the common (CGPA &#8722; 0.75) &times; 10 formula &mdash; check your university's exact conversion. Classification bands are indicative only.</p>
+    </section>
+
+  </div>
+
+  <footer class="reef__footer">
+    <p>Figures are estimates for personal tracking &mdash; not an official academic document.</p>
+  </footer>
+
+</main>
+
+<script>
+  // decorative floating bubbles
+  (function(){
+    const n = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 12;
+    for (let i = 0; i < n; i++){
+      const b = document.createElement('span');
+      b.className = 'bubble';
+      const size = 6 + Math.random() * 16;
+      b.style.width = size + 'px';
+      b.style.height = size + 'px';
+      b.style.left = Math.random() * 100 + 'vw';
+      b.style.animationDuration = (10 + Math.random() * 12) + 's';
+      b.style.animationDelay = (Math.random() * 12) + 's';
+      document.body.appendChild(b);
+    }
+  })();
+
+  const credits = {
+    1: 19.5, 2: 19.5,
+    3: 21.5, 4: 21.5,
+    5: 21.5, 6: 21.5,
+    7: 23,   8: 12
+  };
+
+  const semesterLabels = {
+    1: '1-1 (1st Sem)', 2: '1-2 (2nd Sem)',
+    3: '2-1 (3rd Sem)', 4: '2-2 (4th Sem)',
+    5: '3-1 (5th Sem)', 6: '3-2 (6th Sem)',
+    7: '4-1 (7th Sem)', 8: '4-2 (8th Sem)'
+  };
+
+  const yearSemesters = { 1: [1,2], 2: [3,4], 3: [5,6], 4: [7,8] };
+  const yearLabels = { 1: '1st Year', 2: '2nd Year', 3: '3rd Year', 4: '4th Year' };
+
+  const studentTypeEl = document.getElementById('studentType');
+  const yearsEl = document.getElementById('years');
+  const inputsSection = document.getElementById('inputsSection');
+  const inputsEl = document.getElementById('inputs');
+  const resultCard = document.getElementById('resultCard');
+  const form = document.getElementById('sgpaForm');
+
+  function startYearFor(type){ return type === 'lateral' ? 2 : 1; }
+
+  function populateYears(){
+    const startYear = startYearFor(studentTypeEl.value);
+    const prev = yearsEl.value;
+    yearsEl.innerHTML = '<option value="">--Select--</option>';
+    for (let y = startYear; y <= 4; y++){
+      yearsEl.innerHTML += `<option value="${y}">${yearLabels[y]}</option>`;
+    }
+    yearsEl.value = (prev && Number(prev) >= startYear) ? prev : '';
+    buildInputs();
+  }
+
+  function buildInputs(){
+    const startYear = startYearFor(studentTypeEl.value);
+    const years = yearsEl.value;
+
+    inputsEl.innerHTML = '';
+    resultCard.hidden = true;
+
+    if (!years){ inputsSection.hidden = true; return; }
+    inputsSection.hidden = false;
+
+    for (let y = startYear; y <= Number(years); y++){
+      const block = document.createElement('div');
+      block.className = 'year-block';
+
+      const title = document.createElement('h3');
+      title.className = 'year-title';
+      title.innerHTML = `<span class="year-num">${String(y).padStart(2,'0')}</span>${yearLabels[y]}`;
+      block.appendChild(title);
+
+      const rows = document.createElement('div');
+      rows.className = 'sem-rows';
+      yearSemesters[y].forEach(sem => {
+        rows.innerHTML += `
+          <div class="sem-row">
+            <div class="sem-meta">
+              <span class="sem-name">${semesterLabels[sem]}</span>
+              <span class="sem-credits">${credits[sem]} credits</span>
+            </div>
+            <input class="sgpa-input" type="number" id="sgpa_${sem}" name="sgpa_${sem}"
+                   placeholder="0.00" step="0.01" min="0" max="10" required>
+          </div>`;
+      });
+      block.appendChild(rows);
+      inputsEl.appendChild(block);
+    }
+  }
+
+  function classify(cgpa){
+    if (cgpa >= 8.5) return 'First Class with Distinction';
+    if (cgpa >= 7.5) return 'First Class';
+    if (cgpa >= 6.5) return 'Second Class';
+    return 'Pass Class';
+  }
+
+  function showResult(cgpa, yearAverages){
+    document.getElementById('cgpaValue').textContent = cgpa.toFixed(2);
+    document.getElementById('cgpaClass').textContent = classify(cgpa);
+
+    const percentage = (cgpa - 0.75) * 10;
+    document.getElementById('percentageValue').textContent = percentage.toFixed(2) + '%';
+
+    const tbody = document.getElementById('yearTableBody');
+    tbody.innerHTML = '';
+    yearAverages.forEach(({ year, avg }) => {
+      tbody.innerHTML += `<tr><td>${yearLabels[year]}</td><td>${avg.toFixed(2)}</td></tr>`;
+    });
+
+    resultCard.hidden = false;
+    const popWrap = document.getElementById('popWrap');
+    popWrap.classList.remove('pop-in');
+    void popWrap.offsetWidth;
+    popWrap.classList.add('pop-in');
+
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const startYear = startYearFor(studentTypeEl.value);
+    const years = Number(yearsEl.value);
+    if (!years) return;
+
+    let totalPoints = 0, totalCredits = 0;
+    const yearAverages = [];
+
+    for (let y = startYear; y <= years; y++){
+      let yPoints = 0, yCredits = 0;
+      yearSemesters[y].forEach(sem => {
+        const val = parseFloat(document.getElementById(`sgpa_${sem}`).value);
+        const c = credits[sem];
+        if (!isNaN(val)){
+          yPoints += val * c;
+          yCredits += c;
+        }
+      });
+      totalPoints += yPoints;
+      totalCredits += yCredits;
+      yearAverages.push({ year: y, avg: yCredits ? yPoints / yCredits : 0 });
+    }
+
+    if (totalCredits === 0) return;
+    showResult(totalPoints / totalCredits, yearAverages);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    form.reset();
+    studentTypeEl.value = 'regular';
+    populateYears();
+  });
+
+  studentTypeEl.addEventListener('change', populateYears);
+  yearsEl.addEventListener('change', buildInputs);
+
+  populateYears();
+</script>
+
+</body>
+</html>
