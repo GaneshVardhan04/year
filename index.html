@@ -3,463 +3,358 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CGPA Ledger — Year-wise CGPA Calculator</title>
+<title>CGPA Web-Slinger — Year-wise CGPA Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink-navy: #16233F;
-    --ink-navy-deep: #0C1728;
-    --parchment: #F1E8D2;
-    --parchment-shade: #E6D8B4;
-    --ink: #26221A;
-    --ink-soft: #5B5644;
-    --brass: #B6912E;
-    --brass-deep: #8C6C1F;
-    --red-ink: #A23B2A;
-    --line: rgba(38,34,26,0.14);
-    --font-display: 'Fraunces', serif;
+    --hero-red: #E4222A;
+    --hero-red-deep: #B5121A;
+    --hero-blue: #14338C;
+    --hero-blue-light: #2C57C9;
+    --ink: #101114;
+    --paper: #F4F1E8;
+    --paper-dim: #E7E1CF;
+    --line: rgba(16,17,20,0.85);
+    --font-display: 'Bangers', cursive;
+    --font-ui: 'Barlow Condensed', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
-    --font-sans: 'Inter', sans-serif;
-    --radius: 3px;
   }
 
   *{ box-sizing: border-box; }
-
   html{ scroll-behavior: smooth; }
 
   body{
     margin:0;
     min-height:100vh;
-    font-family: var(--font-sans);
+    font-family: var(--font-ui);
     color: var(--ink);
-    background:
-      radial-gradient(ellipse at top, #1B2C4F 0%, var(--ink-navy) 45%, var(--ink-navy-deep) 100%);
-    padding: clamp(20px, 5vw, 64px) 16px;
+    background-color: #0A0C14;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.09) 1.1px, transparent 1.1px);
+    background-size: 14px 14px;
+    padding: clamp(18px, 5vw, 60px) 14px;
     display:flex;
     justify-content:center;
   }
 
-  /* ---------- Ledger book shell ---------- */
-  .ledger{
+  .sheet{
     width:100%;
-    max-width: 760px;
-    background: var(--parchment);
-    background-image: repeating-linear-gradient(
-      to bottom,
-      transparent 0px, transparent 31px,
-      var(--line) 32px
-    );
-    background-position: 0 132px;
-    border-radius: var(--radius);
-    box-shadow:
-      0 30px 60px -20px rgba(0,0,0,0.55),
-      0 2px 0 var(--brass-deep),
-      0 0 0 1px rgba(0,0,0,0.15);
+    max-width: 780px;
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--hero-blue), 10px 10px 0 4px var(--ink);
+    position:relative;
+  }
+
+  /* ---------- Header panel ---------- */
+  .panel-hero{
+    background: var(--hero-red);
+    border-bottom: 4px solid var(--ink);
+    padding: 36px 32px 28px;
     position:relative;
     overflow:hidden;
   }
-
-  .ledger::before, .ledger::after{
+  .panel-hero::before{
     content:"";
-    position:absolute;
-    width:26px; height:26px;
-    background: var(--brass);
-    opacity:0.9;
-    z-index:2;
-  }
-  .ledger::before{ top:0; left:0; clip-path: polygon(0 0, 100% 0, 0 100%); }
-  .ledger::after{ bottom:0; right:0; clip-path: polygon(100% 100%, 0 100%, 100% 0); }
-
-  .ledger__cover{
-    padding: 42px 40px 28px;
-    border-bottom: 1px solid var(--line);
-    position:relative;
-  }
-
-  .seal-mini{
-    position:absolute;
-    top: 40px; right: 40px;
-    width:40px; height:40px;
-    border:1.5px solid var(--brass-deep);
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    color:var(--brass-deep);
-    font-size:16px;
-    transform: rotate(-8deg);
+    position:absolute; inset:0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.16) 1.4px, transparent 1.4px);
+    background-size: 10px 10px;
+    pointer-events:none;
   }
 
   .eyebrow{
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--red-ink);
-    margin: 0 0 10px;
+    position:relative;
+    display:inline-block;
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--ink);
+    background: #fff;
+    border: 2.5px solid var(--ink);
+    padding: 3px 10px;
+    transform: rotate(-2deg);
+    margin: 0 0 14px;
   }
 
   h1{
+    position:relative;
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(32px, 5vw, 44px);
-    line-height: 1.05;
-    margin: 0 0 10px;
-    color: var(--ink-navy);
-    max-width: 80%;
+    font-weight:400;
+    font-size: clamp(38px, 7vw, 58px);
+    line-height:0.95;
+    letter-spacing: 0.01em;
+    color: #fff;
+    -webkit-text-stroke: 2px var(--ink);
+    text-shadow: 4px 4px 0 var(--ink);
+    margin: 0 0 12px;
   }
 
   .lede{
-    font-size: 14.5px;
-    line-height:1.6;
-    color: var(--ink-soft);
-    max-width: 46ch;
+    position:relative;
+    font-size: 16px;
+    font-weight:600;
+    line-height:1.4;
+    color: #fff;
+    max-width: 48ch;
     margin:0;
   }
 
-  /* ---------- Body / margin-rule layout ---------- */
-  .ledger__body{
-    position:relative;
-    padding: 30px 40px 40px 96px;
-  }
+  /* ---------- Web strand divider ---------- */
+  .web-strand{ display:block; width:100%; height:16px; }
 
-  .ledger__body::before{
-    content:"";
-    position:absolute;
-    top:0; bottom:0;
-    left:56px;
-    width:1.5px;
-    background: var(--red-ink);
-    opacity:0.55;
-  }
+  /* ---------- Body ---------- */
+  .sheet__body{ padding: 30px 32px 34px; }
 
   .card{
+    background:#fff;
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 24px;
+    margin-bottom: 30px;
     position:relative;
-    margin-bottom: 34px;
   }
 
-  .section-label{
+  .card__tag{
     position:absolute;
-    left:-88px;
-    top:2px;
-    width:76px;
-    text-align:right;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing:0.04em;
-    color: var(--brass-deep);
-    line-height:1.4;
-    margin:0;
+    top:-16px; left:20px;
+    background: var(--hero-blue);
+    color:#fff;
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing:0.03em;
+    padding: 3px 12px 5px;
+    border: 2.5px solid var(--ink);
+    transform: rotate(-1.5deg);
   }
 
   .section-title{
     font-family: var(--font-display);
-    font-weight:600;
-    font-size: 19px;
-    color: var(--ink-navy);
-    margin: 0 0 18px;
+    font-size: 24px;
+    letter-spacing:0.02em;
+    color: var(--hero-blue);
+    margin: 10px 0 16px;
   }
 
   /* ---------- Fields ---------- */
-  .field-row{
-    display:flex;
-    gap: 22px;
-    flex-wrap: wrap;
-  }
-
-  .field{
-    flex: 1 1 200px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
+  .field-row{ display:flex; gap:20px; flex-wrap:wrap; }
+  .field{ flex:1 1 200px; display:flex; flex-direction:column; gap:6px; }
 
   label{
-    font-size: 12px;
-    font-weight:600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--ink-navy);
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 13px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color: var(--ink);
   }
 
   select, input[type="number"]{
     font-family: var(--font-mono);
-    font-size: 14.5px;
+    font-size: 15px;
     color: var(--ink);
-    background: transparent;
-    border: none;
-    border-bottom: 1.5px solid var(--ink-soft);
-    padding: 8px 2px;
-    outline: none;
-    transition: border-color .15s ease, background .15s ease;
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    padding: 9px 10px;
+    outline:none;
+    border-radius:0;
     -webkit-appearance:none;
     appearance:none;
-    border-radius:0;
+    transition: box-shadow .12s ease, transform .12s ease;
   }
 
   select{
-    background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
-    background-position: calc(100% - 8px) 14px, calc(100% - 3px) 14px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+    background-position: calc(100% - 14px) 17px, calc(100% - 9px) 17px;
     background-size: 5px 5px, 5px 5px;
     background-repeat: no-repeat;
-    padding-right: 22px;
+    padding-right: 30px;
   }
 
   select:focus, input[type="number"]:focus{
-    border-color: var(--brass-deep);
-    background-color: rgba(182,145,46,0.06);
+    box-shadow: 3px 3px 0 var(--hero-red);
+    transform: translate(-1px,-1px);
   }
-
   select:focus-visible, input:focus-visible, button:focus-visible{
-    outline: 2px solid var(--red-ink);
+    outline: 3px solid var(--hero-blue);
     outline-offset: 2px;
   }
 
   /* ---------- Year / semester records ---------- */
-  .year-block{ margin-bottom: 22px; }
-  .year-block:last-child{ margin-bottom: 0; }
+  .year-block{ margin-bottom:20px; }
+  .year-block:last-child{ margin-bottom:0; }
 
   .year-title{
     display:flex; align-items:center; gap:10px;
     font-family: var(--font-display);
-    font-weight:600;
-    font-size:16px;
-    color: var(--ink-navy);
-    margin: 0 0 12px;
+    font-size: 19px;
+    color: var(--ink);
+    margin: 0 0 10px;
   }
-
   .year-num{
     font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--parchment);
-    background: var(--ink-navy);
-    padding: 3px 6px;
-    border-radius: 2px;
-    letter-spacing:0.03em;
+    font-size: 11.5px;
+    font-weight:600;
+    color:#fff;
+    background: var(--hero-red);
+    padding: 3px 7px;
+    border: 2px solid var(--ink);
   }
 
   .sem-rows{ display:flex; flex-direction:column; }
-
   .sem-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:16px;
-    padding: 10px 0;
-    border-bottom: 1px dashed var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; padding: 9px 0;
+    border-bottom: 2px dashed var(--line);
   }
-
   .sem-meta{ display:flex; flex-direction:column; gap:2px; }
-  .sem-name{ font-size:14px; font-weight:600; color:var(--ink); }
-  .sem-credits{ font-family: var(--font-mono); font-size:11.5px; color: var(--ink-soft); }
+  .sem-name{ font-size:14.5px; font-weight:700; color:var(--ink); }
+  .sem-credits{ font-family: var(--font-mono); font-size:11.5px; color:#555; }
 
-  .sgpa-input{
-    width: 96px;
-    text-align:right;
-    flex-shrink:0;
-  }
-  .sgpa-input::placeholder{ color: rgba(38,34,26,0.3); }
+  .sgpa-input{ width:96px; text-align:right; flex-shrink:0; }
+  .sgpa-input::placeholder{ color: rgba(16,17,20,0.32); }
 
   /* ---------- Buttons ---------- */
-  .actions{
-    display:flex;
-    gap:14px;
-    margin-top: 26px;
-    flex-wrap:wrap;
-  }
+  .actions{ display:flex; gap:14px; margin-top:24px; flex-wrap:wrap; }
 
-  .btn-stamp{
-    font-family: var(--font-sans);
+  .btn{
+    font-family: var(--font-ui);
     font-weight:700;
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--parchment);
-    background: var(--ink-navy);
-    border: none;
-    padding: 14px 26px;
-    border-radius: var(--radius);
-    cursor:pointer;
-    transition: transform .12s ease, background .15s ease;
-  }
-  .btn-stamp:hover{ background: #0C1728; }
-  .btn-stamp:active{ transform: scale(0.97); }
-
-  .btn-ghost{
-    font-family: var(--font-sans);
-    font-weight:600;
-    font-size: 13px;
-    letter-spacing: 0.04em;
-    color: var(--red-ink);
-    background: transparent;
-    border: 1.5px solid var(--red-ink);
-    padding: 13px 20px;
-    border-radius: var(--radius);
-    cursor:pointer;
-    transition: background .15s ease, color .15s ease;
-  }
-  .btn-ghost:hover{ background: var(--red-ink); color: var(--parchment); }
-
-  /* ---------- Result: stamp + summary ---------- */
-  .result-card{
-    display:flex;
-    align-items:center;
-    gap: 34px;
-    flex-wrap: wrap;
-    padding-top: 8px;
-  }
-
-  .stamp{
-    position:relative;
-    width: 176px; height:176px;
-    flex-shrink:0;
-    transform: rotate(-6deg);
-    opacity:1;
-  }
-
-  .stamp.stamp-in{
-    animation: stampIn .55s cubic-bezier(.2,.8,.3,1.2) both;
-  }
-
-  @keyframes stampIn{
-    0%{ opacity:0; transform: scale(2.4) rotate(-20deg); }
-    55%{ opacity:1; transform: scale(0.94) rotate(-4deg); }
-    100%{ opacity:1; transform: scale(1) rotate(-6deg); }
-  }
-
-  .stamp__ring{ width:100%; height:100%; display:block; }
-  .stamp__outer{ fill:none; stroke: var(--red-ink); stroke-width:2.5; opacity:0.85; }
-  .stamp__inner{ fill:none; stroke: var(--red-ink); stroke-width:1; stroke-dasharray:2 3; opacity:0.7; }
-  .stamp__ringtext{
-    font-family: var(--font-mono);
-    font-size: 8.4px;
-    letter-spacing: 0.12em;
-    fill: var(--red-ink);
-  }
-
-  .stamp__center{
-    position:absolute;
-    inset:0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    gap:2px;
-  }
-
-  .stamp__value{
-    font-family: var(--font-display);
-    font-weight:700;
-    font-size: 40px;
-    color: var(--red-ink);
-    line-height:1;
-  }
-
-  .stamp__class{
-    font-family: var(--font-mono);
-    font-size: 9.5px;
+    font-size: 14px;
     letter-spacing:0.05em;
     text-transform:uppercase;
-    color: var(--red-ink);
-    max-width: 90px;
+    border: 2.5px solid var(--ink);
+    padding: 12px 24px;
+    cursor:pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .btn:active{ transform: translate(4px,4px); box-shadow: 0 0 0 var(--ink); }
+
+  .btn-fire{ background: var(--hero-red); color:#fff; }
+  .btn-fire:hover{ background: var(--hero-red-deep); }
+  .btn-ghost{ background:#fff; color: var(--hero-blue); }
+  .btn-ghost:hover{ background: var(--paper-dim); }
+
+  /* ---------- Result ---------- */
+  .result-card{ display:flex; align-items:center; gap:30px; flex-wrap:wrap; }
+
+  .burst-wrap{
+    position:relative;
+    width:186px; height:186px;
+    flex-shrink:0;
   }
 
-  .year-summary{ flex:1 1 220px; min-width: 220px; }
-.year-summary h3{
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color: var(--brass-deep);
-    margin: 0 0 10px;
+  .burst-wrap.burst-in .burst-svg{
+    animation: burstIn .5s cubic-bezier(.25,.9,.3,1.35) both;
   }
-  table{ width:100%; border-collapse: collapse; }
+  @keyframes burstIn{
+    0%{ opacity:0; transform: scale(0.2) rotate(-30deg); }
+    70%{ opacity:1; transform: scale(1.08) rotate(4deg); }
+    100%{ opacity:1; transform: scale(1) rotate(0deg); }
+  }
+
+  .burst-svg{ width:100%; height:100%; display:block; transform-origin: center; }
+
+  .burst-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:0;
+  }
+  .cgpa-value{
+    font-family: var(--font-display);
+    font-size: 46px;
+    color:#fff;
+    -webkit-text-stroke: 1.5px var(--ink);
+    line-height:1;
+  }
+  .cgpa-class{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 10.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:#fff;
+    max-width: 96px;
+    margin-top: 2px;
+  }
+
+  .result-side{ flex:1 1 240px; min-width:220px; display:flex; flex-direction:column; gap:16px; }
+
+  .percent-badge{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    background: var(--hero-blue);
+    border: 3px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
+    padding: 12px 16px;
+    transform: rotate(-1deg);
+  }
+  .percent-badge .p-label{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#fff;
+  }
+  .percent-badge .p-value{
+    font-family: var(--font-display);
+    font-size: 30px;
+    color:#fff;
+  }
+
+  table{ width:100%; border-collapse:collapse; }
   table td{
     font-family: var(--font-mono);
     font-size: 13px;
-    padding: 7px 0;
-    border-bottom: 1px dashed var(--line);
+    padding: 6px 0;
+    border-bottom: 2px dashed var(--line);
   }
-  table td:last-child{ text-align:right; font-weight:600; color: var(--ink-navy); }
-
-  .percentage-block{
-    grid-column: 1 / -1;
-    width:100%;
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    gap:16px;
-    flex-wrap:wrap;
-    margin-top: 6px;
-    padding: 14px 16px;
-    border: 1.5px solid var(--brass-deep);
-    border-left: 4px solid var(--brass-deep);
-    background: rgba(182,145,46,0.08);
-  }
-  .percentage-block .p-label{
-    font-family: var(--font-mono);
-    font-size: 11px;
+  table td:last-child{ text-align:right; font-weight:700; color: var(--hero-blue); }
+  .year-summary h3{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 11.5px;
     letter-spacing:0.08em;
     text-transform:uppercase;
-    color: var(--brass-deep);
-  }
-  .percentage-block .p-value{
-    font-family: var(--font-display);
-    font-weight:700;
-    font-size: 26px;
-    color: var(--ink-navy);
-    line-height:1;
-  }
-  .percentage-block .p-formula{
-    font-size: 11px;
-    color: var(--ink-soft);
-    font-family: var(--font-mono);
+    color: var(--hero-red);
+    margin: 0 0 8px;
   }
 
   .disclaimer{
-    grid-column: 1 / -1;
     width:100%;
-    font-size: 11.5px;
-    color: var(--ink-soft);
+    font-size: 12px;
+    color:#555;
     margin-top: 18px;
     line-height:1.5;
+    font-family: var(--font-ui);
   }
 
   /* ---------- Footer ---------- */
-  .ledger__footer{
-    padding: 18px 40px 28px 96px;
-    border-top: 1px solid var(--line);
+  .sheet__footer{
+    padding: 16px 32px 24px;
+    border-top: 3px solid var(--ink);
+    background: var(--paper-dim);
   }
-  .ledger__footer p{
-    margin:0;
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    font-family: var(--font-mono);
+  .sheet__footer p{
+    margin:0; font-size: 11.5px; color:#444; font-family: var(--font-mono);
   }
 
-  /* ---------- Responsive ---------- */
   @media (max-width: 680px){
-    .ledger__body{ padding: 26px 22px 34px; }
-    .ledger__body::before{ display:none; }
-    .card{ margin-bottom: 30px; }
-    .section-label{
-      position:static;
-      width:auto;
-      text-align:left;
-      display:block;
-      margin-bottom:8px;
-    }
-    .ledger__cover{ padding: 32px 22px 24px; }
-    .seal-mini{ top:24px; right:22px; }
-    h1{ max-width:100%; }
-    .ledger__footer{ padding: 16px 22px 24px; }
-    .result-card{ gap:24px; }
+    .sheet__body{ padding: 24px 18px 28px; }
+    .panel-hero{ padding: 28px 20px 22px; }
+    .card{ padding: 18px 16px; }
+    .sheet__footer{ padding: 14px 18px 20px; }
+    .result-card{ gap:22px; }
   }
 
   @media (prefers-reduced-motion: reduce){
     html{ scroll-behavior:auto; }
-    .stamp.stamp-in{ animation: none; }
+    .burst-wrap.burst-in .burst-svg{ animation:none; }
   }
 
   [hidden]{ display:none !important; }
@@ -467,20 +362,23 @@
 </head>
 <body>
 
-<main class="ledger">
+<main class="sheet">
 
-  <header class="ledger__cover">
-    <div class="seal-mini" aria-hidden="true">&#10022;</div>
-    <p class="eyebrow">Registrar's Office &middot; Cumulative Record</p>
-    <h1>CGPA Ledger</h1>
-    <p class="lede">Enter your semester-wise SGPA, sorted by year, and this ledger tallies your cumulative grade point average against your credit load.</p>
+  <header class="panel-hero">
+    <span class="eyebrow">Semester tracker &middot; year by year</span>
+    <h1>CGPA<br>Web-Slinger</h1>
+    <p class="lede">Swing through your semesters — enter your SGPA per year and get your CGPA, classification, and percentage in one shot.</p>
   </header>
 
-  <div class="ledger__body">
+  <svg class="web-strand" viewBox="0 0 780 16" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,2 L780,2" stroke="#101114" stroke-width="4" stroke-dasharray="1 14" stroke-linecap="round"/>
+  </svg>
+
+  <div class="sheet__body">
 
     <section class="card" aria-labelledby="setup-heading">
-      <p class="section-label">01 &mdash; Setup</p>
-      <h2 id="setup-heading" class="section-title">Entry details</h2>
+      <span class="card__tag">STEP 1</span>
+      <h2 id="setup-heading" class="section-title">Suit up</h2>
       <div class="field-row">
         <div class="field">
           <label for="studentType">Admission type</label>
@@ -499,55 +397,50 @@
     </section>
 
     <section class="card" id="inputsSection" hidden aria-labelledby="records-heading">
-      <p class="section-label">02 &mdash; Records</p>
-      <h2 id="records-heading" class="section-title">Semester SGPA</h2>
+      <span class="card__tag">STEP 2</span>
+      <h2 id="records-heading" class="section-title">Log your SGPA</h2>
       <form id="sgpaForm" novalidate>
         <div id="inputs"></div>
         <div class="actions">
-          <button type="submit" class="btn-stamp">Calculate CGPA</button>
-          <button type="button" class="btn-ghost" id="resetBtn">Reset</button>
+          <button type="submit" class="btn btn-fire">Fire the Web — Calculate</button>
+          <button type="button" class="btn btn-ghost" id="resetBtn">Reset</button>
         </div>
       </form>
     </section>
 
     <section class="card result-card" id="resultCard" hidden aria-live="polite" aria-labelledby="result-heading">
-      <p class="section-label" style="position:static; margin-bottom:-8px;" id="result-heading">03 &mdash; Result</p>
-      <div class="stamp" id="stampEl">
-        <svg class="stamp__ring" viewBox="0 0 220 220" aria-hidden="true">
-          <defs>
-            <path id="ringPath" d="M 110,110 m -86,0 a 86,86 0 1,1 172,0 a 86,86 0 1,1 -172,0" />
-          </defs>
-          <circle cx="110" cy="110" r="100" class="stamp__outer" />
-          <circle cx="110" cy="110" r="70" class="stamp__inner" />
-          <text class="stamp__ringtext">
-            <textPath href="#ringPath" startOffset="2%">ESTIMATED CGPA &middot; FOR REFERENCE ONLY &middot; ESTIMATED CGPA &middot; FOR REFERENCE ONLY &middot;</textPath>
-          </text>
+      <span class="card__tag" id="result-heading">RESULT</span>
+
+      <div class="burst-wrap" id="burstWrap">
+        <svg class="burst-svg" viewBox="0 0 200 200" aria-hidden="true">
+          <polygon points="100,4 118,42 158,26 148,68 190,72 158,100 190,128 148,132 158,174 118,158 100,196 82,158 42,174 52,132 10,128 42,100 10,72 52,68 42,26 82,42"
+            fill="#E4222A" stroke="#101114" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="100" cy="100" r="62" fill="#14338C" stroke="#101114" stroke-width="3"/>
         </svg>
-        <div class="stamp__center">
-          <span class="stamp__value" id="cgpaValue">0.00</span>
-          <span class="stamp__class" id="cgpaClass">&mdash;</span>
+        <div class="burst-center">
+          <span class="cgpa-value" id="cgpaValue">0.00</span>
+          <span class="cgpa-class" id="cgpaClass">&mdash;</span>
         </div>
       </div>
 
-<div class="year-summary">
-        <h3>Year-wise average</h3>
-        <table>
-          <tbody id="yearTableBody"></tbody>
-        </table>
+      <div class="result-side">
+        <div class="percent-badge">
+          <span class="p-label">Equivalent %</span>
+          <span class="p-value" id="percentageValue">--</span>
+        </div>
+
+        <div class="year-summary">
+          <h3>Year-wise average</h3>
+          <table><tbody id="yearTableBody"></tbody></table>
+        </div>
       </div>
 
-      <div class="percentage-block">
-        <span class="p-label">Equivalent Percentage</span>
-        <span class="p-value" id="percentageValue">--</span>
-        <span class="p-formula">(CGPA &#8722; 0.75) &#215; 10</span>
-      </div>
-
-      <p class="disclaimer">Classification bands shown are indicative only &mdash; always confirm the grading policy with your university's official transcript.</p>
+      <p class="disclaimer">Percentage uses the common (CGPA &#8722; 0.75) &times; 10 formula &mdash; check your university's exact conversion. Classification bands are indicative only.</p>
     </section>
 
   </div>
 
-  <footer class="ledger__footer">
+  <footer class="sheet__footer">
     <p>Figures are estimates for personal tracking &mdash; not an official academic document.</p>
   </footer>
 
@@ -635,7 +528,7 @@
     return 'Pass Class';
   }
 
-function showResult(cgpa, yearAverages){
+  function showResult(cgpa, yearAverages){
     document.getElementById('cgpaValue').textContent = cgpa.toFixed(2);
     document.getElementById('cgpaClass').textContent = classify(cgpa);
 
@@ -649,10 +542,10 @@ function showResult(cgpa, yearAverages){
     });
 
     resultCard.hidden = false;
-    const stampEl = document.getElementById('stampEl');
-    stampEl.classList.remove('stamp-in');
-    void stampEl.offsetWidth;
-    stampEl.classList.add('stamp-in');
+    const burstWrap = document.getElementById('burstWrap');
+    burstWrap.classList.remove('burst-in');
+    void burstWrap.offsetWidth;
+    burstWrap.classList.add('burst-in');
 
     resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
