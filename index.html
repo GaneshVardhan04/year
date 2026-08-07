@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CGPA Web-Slinger — Year-wise CGPA Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hero-red: #E4222A;
+    --hero-red-deep: #B5121A;
+    --hero-blue: #14338C;
+    --hero-blue-light: #2C57C9;
+    --ink: #101114;
+    --paper: #F4F1E8;
+    --paper-dim: #E7E1CF;
+    --line: rgba(16,17,20,0.85);
+    --font-display: 'Bangers', cursive;
+    --font-ui: 'Barlow Condensed', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family: var(--font-ui);
+    color: var(--ink);
+    background-color: #0A0C14;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.09) 1.1px, transparent 1.1px);
+    background-size: 14px 14px;
+    padding: clamp(18px, 5vw, 60px) 14px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .sheet{
+    width:100%;
+    max-width: 780px;
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--hero-blue), 10px 10px 0 4px var(--ink);
+    position:relative;
+  }
+
+  /* ---------- Header panel ---------- */
+  .panel-hero{
+    background: var(--hero-red);
+    border-bottom: 4px solid var(--ink);
+    padding: 36px 32px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  .panel-hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.16) 1.4px, transparent 1.4px);
+    background-size: 10px 10px;
+    pointer-events:none;
+  }
+
+  .eyebrow{
+    position:relative;
+    display:inline-block;
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--ink);
+    background: #fff;
+    border: 2.5px solid var(--ink);
+    padding: 3px 10px;
+    transform: rotate(-2deg);
+    margin: 0 0 14px;
+  }
+
+  h1{
+    position:relative;
+    font-family: var(--font-display);
+    font-weight:400;
+    font-size: clamp(38px, 7vw, 58px);
+    line-height:0.95;
+    letter-spacing: 0.01em;
+    color: #fff;
+    -webkit-text-stroke: 2px var(--ink);
+    text-shadow: 4px 4px 0 var(--ink);
+    margin: 0 0 12px;
+  }
+
+  .lede{
+    position:relative;
+    font-size: 16px;
+    font-weight:600;
+    line-height:1.4;
+    color: #fff;
+    max-width: 48ch;
+    margin:0;
+  }
+
+  /* ---------- Web strand divider ---------- */
+  .web-strand{ display:block; width:100%; height:16px; }
+
+  /* ---------- Body ---------- */
+  .sheet__body{ padding: 30px 32px 34px; }
+
+  .card{
+    background:#fff;
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 24px;
+    margin-bottom: 30px;
+    position:relative;
+  }
+
+  .card__tag{
+    position:absolute;
+    top:-16px; left:20px;
+    background: var(--hero-blue);
+    color:#fff;
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing:0.03em;
+    padding: 3px 12px 5px;
+    border: 2.5px solid var(--ink);
+    transform: rotate(-1.5deg);
+  }
+
+  .section-title{
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing:0.02em;
+    color: var(--hero-blue);
+    margin: 10px 0 16px;
+  }
+
+  /* ---------- Fields ---------- */
+  .field-row{ display:flex; gap:20px; flex-wrap:wrap; }
+  .field{ flex:1 1 200px; display:flex; flex-direction:column; gap:6px; }
+
+  label{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 13px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color: var(--ink);
+  }
+
+  select, input[type="number"]{
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    padding: 9px 10px;
+    outline:none;
+    border-radius:0;
+    -webkit-appearance:none;
+    appearance:none;
+    transition: box-shadow .12s ease, transform .12s ease;
+  }
+
+  select{
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+    background-position: calc(100% - 14px) 17px, calc(100% - 9px) 17px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 30px;
+  }
+
+  select:focus, input[type="number"]:focus{
+    box-shadow: 3px 3px 0 var(--hero-red);
+    transform: translate(-1px,-1px);
+  }
+  select:focus-visible, input:focus-visible, button:focus-visible{
+    outline: 3px solid var(--hero-blue);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Year / semester records ---------- */
+  .year-block{ margin-bottom:20px; }
+  .year-block:last-child{ margin-bottom:0; }
+
+  .year-title{
+    display:flex; align-items:center; gap:10px;
+    font-family: var(--font-display);
+    font-size: 19px;
+    color: var(--ink);
+    margin: 0 0 10px;
+  }
+  .year-num{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight:600;
+    color:#fff;
+    background: var(--hero-red);
+    padding: 3px 7px;
+    border: 2px solid var(--ink);
+  }
+
+  .sem-rows{ display:flex; flex-direction:column; }
+  .sem-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; padding: 9px 0;
+    border-bottom: 2px dashed var(--line);
+  }
+  .sem-meta{ display:flex; flex-direction:column; gap:2px; }
+  .sem-name{ font-size:14.5px; font-weight:700; color:var(--ink); }
+  .sem-credits{ font-family: var(--font-mono); font-size:11.5px; color:#555; }
+
+  .sgpa-input{ width:96px; text-align:right; flex-shrink:0; }
+  .sgpa-input::placeholder{ color: rgba(16,17,20,0.32); }
+
+  /* ---------- Buttons ---------- */
+  .actions{ display:flex; gap:14px; margin-top:24px; flex-wrap:wrap; }
+
+  .btn{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 14px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    border: 2.5px solid var(--ink);
+    padding: 12px 24px;
+    cursor:pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .btn:active{ transform: translate(4px,4px); box-shadow: 0 0 0 var(--ink); }
+
+  .btn-fire{ background: var(--hero-red); color:#fff; }
+  .btn-fire:hover{ background: var(--hero-red-deep); }
+  .btn-ghost{ background:#fff; color: var(--hero-blue); }
+  .btn-ghost:hover{ background: var(--paper-dim); }
+
+  /* ---------- Result ---------- */
+  .result-card{ display:flex; align-items:center; gap:30px; flex-wrap:wrap; }
+
+  .burst-wrap{
+    position:relative;
+    width:186px; height:186px;
+    flex-shrink:0;
+  }
+
+  .burst-wrap.burst-in .burst-svg{
+    animation: burstIn .5s cubic-bezier(.25,.9,.3,1.35) both;
+  }
+  @keyframes burstIn{
+    0%{ opacity:0; transform: scale(0.2) rotate(-30deg); }
+    70%{ opacity:1; transform: scale(1.08) rotate(4deg); }
+    100%{ opacity:1; transform: scale(1) rotate(0deg); }
+  }
+
+  .burst-svg{ width:100%; height:100%; display:block; transform-origin: center; }
+
+  .burst-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:0;
+  }
+  .cgpa-value{
+    font-family: var(--font-display);
+    font-size: 46px;
+    color:#fff;
+    -webkit-text-stroke: 1.5px var(--ink);
+    line-height:1;
+  }
+  .cgpa-class{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 10.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:#fff;
+    max-width: 96px;
+    margin-top: 2px;
+  }
+
+  .result-side{ flex:1 1 240px; min-width:220px; display:flex; flex-direction:column; gap:16px; }
+
+  .percent-badge{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    background: var(--hero-blue);
+    border: 3px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
+    padding: 12px 16px;
+    transform: rotate(-1deg);
+  }
+  .percent-badge .p-label{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#fff;
+  }
+  .percent-badge .p-value{
+    font-family: var(--font-display);
+    font-size: 30px;
+    color:#fff;
+  }
+
+  table{ width:100%; border-collapse:collapse; }
+  table td{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 2px dashed var(--line);
+  }
+  table td:last-child{ text-align:right; font-weight:700; color: var(--hero-blue); }
+  .year-summary h3{
+    font-family: var(--font-ui);
+    font-weight:700;
+    font-size: 11.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--hero-red);
+    margin: 0 0 8px;
+  }
+
+  .disclaimer{
+    width:100%;
+    font-size: 12px;
+    color:#555;
+    margin-top: 18px;
+    line-height:1.5;
+    font-family: var(--font-ui);
+  }
+
+  /* ---------- Footer ---------- */
+  .sheet__footer{
+    padding: 16px 32px 24px;
+    border-top: 3px solid var(--ink);
+    background: var(--paper-dim);
+  }
+  .sheet__footer p{
+    margin:0; font-size: 11.5px; color:#444; font-family: var(--font-mono);
+  }
+
+  @media (max-width: 680px){
+    .sheet__body{ padding: 24px 18px 28px; }
+    .panel-hero{ padding: 28px 20px 22px; }
+    .card{ padding: 18px 16px; }
+    .sheet__footer{ padding: 14px 18px 20px; }
+    .result-card{ gap:22px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .burst-wrap.burst-in .burst-svg{ animation:none; }
+  }
+
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+<main class="sheet">
+
+  <header class="panel-hero">
+    <span class="eyebrow">Semester tracker &middot; year by year</span>
+    <h1>CGPA<br>Web-Slinger</h1>
+    <p class="lede">Swing through your semesters — enter your SGPA per year and get your CGPA, classification, and percentage in one shot.</p>
+  </header>
+
+  <svg class="web-strand" viewBox="0 0 780 16" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,2 L780,2" stroke="#101114" stroke-width="4" stroke-dasharray="1 14" stroke-linecap="round"/>
+  </svg>
+
+  <div class="sheet__body">
+
+    <section class="card" aria-labelledby="setup-heading">
+      <span class="card__tag">STEP 1</span>
+      <h2 id="setup-heading" class="section-title">Suit up</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="studentType">Admission type</label>
+          <select id="studentType">
+            <option value="regular">Regular entry</option>
+            <option value="lateral">Lateral entry (from 2nd year)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="years">Years completed</label>
+          <select id="years">
+            <option value="">--Select--</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="inputsSection" hidden aria-labelledby="records-heading">
+      <span class="card__tag">STEP 2</span>
+      <h2 id="records-heading" class="section-title">Log your SGPA</h2>
+      <form id="sgpaForm" novalidate>
+        <div id="inputs"></div>
+        <div class="actions">
+          <button type="submit" class="btn btn-fire">Fire the Web — Calculate</button>
+          <button type="button" class="btn btn-ghost" id="resetBtn">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card result-card" id="resultCard" hidden aria-live="polite" aria-labelledby="result-heading">
+      <span class="card__tag" id="result-heading">RESULT</span>
+
+      <div class="burst-wrap" id="burstWrap">
+        <svg class="burst-svg" viewBox="0 0 200 200" aria-hidden="true">
+          <polygon points="100,4 118,42 158,26 148,68 190,72 158,100 190,128 148,132 158,174 118,158 100,196 82,158 42,174 52,132 10,128 42,100 10,72 52,68 42,26 82,42"
+            fill="#E4222A" stroke="#101114" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="100" cy="100" r="62" fill="#14338C" stroke="#101114" stroke-width="3"/>
+        </svg>
+        <div class="burst-center">
+          <span class="cgpa-value" id="cgpaValue">0.00</span>
+          <span class="cgpa-class" id="cgpaClass">&mdash;</span>
+        </div>
+      </div>
+
+      <div class="result-side">
+        <div class="percent-badge">
+          <span class="p-label">Equivalent %</span>
+          <span class="p-value" id="percentageValue">--</span>
+        </div>
+
+        <div class="year-summary">
+          <h3>Year-wise average</h3>
+          <table><tbody id="yearTableBody"></tbody></table>
+        </div>
+      </div>
+
+      <p class="disclaimer">Percentage uses the common (CGPA &#8722; 0.75) &times; 10 formula &mdash; check your university's exact conversion. Classification bands are indicative only.</p>
+    </section>
+
+  </div>
+
+  <footer class="sheet__footer">
+    <p>Figures are estimates for personal tracking &mdash; not an official academic document.</p>
+  </footer>
+
+</main>
+
+<script>
+  const credits = {
+    1: 19.5, 2: 19.5,
+    3: 21.5, 4: 21.5,
+    5: 21.5, 6: 21.5,
+    7: 23,   8: 12
+  };
+
+  const semesterLabels = {
+    1: '1-1 (1st Sem)', 2: '1-2 (2nd Sem)',
+    3: '2-1 (3rd Sem)', 4: '2-2 (4th Sem)',
+    5: '3-1 (5th Sem)', 6: '3-2 (6th Sem)',
+    7: '4-1 (7th Sem)', 8: '4-2 (8th Sem)'
+  };
+
+  const yearSemesters = { 1: [1,2], 2: [3,4], 3: [5,6], 4: [7,8] };
+  const yearLabels = { 1: '1st Year', 2: '2nd Year', 3: '3rd Year', 4: '4th Year' };
+
+  const studentTypeEl = document.getElementById('studentType');
+  const yearsEl = document.getElementById('years');
+  const inputsSection = document.getElementById('inputsSection');
+  const inputsEl = document.getElementById('inputs');
+  const resultCard = document.getElementById('resultCard');
+  const form = document.getElementById('sgpaForm');
+
+  function startYearFor(type){ return type === 'lateral' ? 2 : 1; }
+
+  function populateYears(){
+    const startYear = startYearFor(studentTypeEl.value);
+    const prev = yearsEl.value;
+    yearsEl.innerHTML = '<option value="">--Select--</option>';
+    for (let y = startYear; y <= 4; y++){
+      yearsEl.innerHTML += `<option value="${y}">${yearLabels[y]}</option>`;
+    }
+    yearsEl.value = (prev && Number(prev) >= startYear) ? prev : '';
+    buildInputs();
+  }
+
+  function buildInputs(){
+    const startYear = startYearFor(studentTypeEl.value);
+    const years = yearsEl.value;
+
+    inputsEl.innerHTML = '';
+    resultCard.hidden = true;
+
+    if (!years){ inputsSection.hidden = true; return; }
+    inputsSection.hidden = false;
+
+    for (let y = startYear; y <= Number(years); y++){
+      const block = document.createElement('div');
+      block.className = 'year-block';
+
+      const title = document.createElement('h3');
+      title.className = 'year-title';
+      title.innerHTML = `<span class="year-num">${String(y).padStart(2,'0')}</span>${yearLabels[y]}`;
+      block.appendChild(title);
+
+      const rows = document.createElement('div');
+      rows.className = 'sem-rows';
+      yearSemesters[y].forEach(sem => {
+        rows.innerHTML += `
+          <div class="sem-row">
+            <div class="sem-meta">
+              <span class="sem-name">${semesterLabels[sem]}</span>
+              <span class="sem-credits">${credits[sem]} credits</span>
+            </div>
+            <input class="sgpa-input" type="number" id="sgpa_${sem}" name="sgpa_${sem}"
+                   placeholder="0.00" step="0.01" min="0" max="10" required>
+          </div>`;
+      });
+      block.appendChild(rows);
+      inputsEl.appendChild(block);
+    }
+  }
+
+  function classify(cgpa){
+    if (cgpa >= 8.5) return 'First Class with Distinction';
+    if (cgpa >= 7.5) return 'First Class';
+    if (cgpa >= 6.5) return 'Second Class';
+    return 'Pass Class';
+  }
+
+  function showResult(cgpa, yearAverages){
+    document.getElementById('cgpaValue').textContent = cgpa.toFixed(2);
+    document.getElementById('cgpaClass').textContent = classify(cgpa);
+
+    const percentage = (cgpa - 0.75) * 10;
+    document.getElementById('percentageValue').textContent = percentage.toFixed(2) + '%';
+
+    const tbody = document.getElementById('yearTableBody');
+    tbody.innerHTML = '';
+    yearAverages.forEach(({ year, avg }) => {
+      tbody.innerHTML += `<tr><td>${yearLabels[year]}</td><td>${avg.toFixed(2)}</td></tr>`;
+    });
+
+    resultCard.hidden = false;
+    const burstWrap = document.getElementById('burstWrap');
+    burstWrap.classList.remove('burst-in');
+    void burstWrap.offsetWidth;
+    burstWrap.classList.add('burst-in');
+
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const startYear = startYearFor(studentTypeEl.value);
+    const years = Number(yearsEl.value);
+    if (!years) return;
+
+    let totalPoints = 0, totalCredits = 0;
+    const yearAverages = [];
+
+    for (let y = startYear; y <= years; y++){
+      let yPoints = 0, yCredits = 0;
+      yearSemesters[y].forEach(sem => {
+        const val = parseFloat(document.getElementById(`sgpa_${sem}`).value);
+        const c = credits[sem];
+        if (!isNaN(val)){
+          yPoints += val * c;
+          yCredits += c;
+        }
+      });
+      totalPoints += yPoints;
+      totalCredits += yCredits;
+      yearAverages.push({ year: y, avg: yCredits ? yPoints / yCredits : 0 });
+    }
+
+    if (totalCredits === 0) return;
+    showResult(totalPoints / totalCredits, yearAverages);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    form.reset();
+    studentTypeEl.value = 'regular';
+    populateYears();
+  });
+
+  studentTypeEl.addEventListener('change', populateYears);
+  yearsEl.addEventListener('change', buildInputs);
+
+  populateYears();
+</script>
+
+</body>
+</html>
